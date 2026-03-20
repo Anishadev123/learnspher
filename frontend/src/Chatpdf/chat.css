@@ -1,0 +1,14 @@
+/* Pure CSS with -3 suffix and inline colors */
+.chat-pdf-container-3 {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  height: 100vh;
+  gap: 0;
+  background-color: #0f172a;
+}
+
+@media (max-width: 1024px) {
+  .chat-pdf-container-3 {
+    grid-template-columns: 1fr;
+  }
+}

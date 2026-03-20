@@ -1,0 +1,73 @@
+.welcome-banner {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+  animation: slideInDown 0.6s ease-out;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.banner-icon {
+  font-size: 3rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.banner-text h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.banner-text p {
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-banner {
+    padding: 1.5rem;
+  }
+
+  .banner-content {
+    gap: 1rem;
+  }
+
+  .banner-icon {
+    font-size: 2rem;
+  }
+
+  .banner-text h2 {
+    font-size: 1.25rem;
+  }
+
+  .banner-text p {
+    font-size: 0.875rem;
+  }
+}

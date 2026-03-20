@@ -1,0 +1,260 @@
+.notes-container-2 {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%);
+  overflow: hidden; /* ✅ Prevent scrollbar */
+}
+
+.notes-content-2 {
+  flex: 1;
+  margin-left: 280px;
+  width: 100%;
+  transition: margin-left 0.3s ease;
+  overflow-y: auto;
+  scrollbar-width: none; /* ✅ Hide scrollbar (Firefox) */
+}
+
+.notes-content-2::-webkit-scrollbar {
+  display: none; /* ✅ Hide scrollbar (Chrome, Edge, Safari) */
+}
+
+@media (max-width: 768px) {
+  .notes-content-2 {
+    margin-left: 0;
+  }
+}
+
+.notes-header-2 {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.header-gradient-2 {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 153, 255, 0.15));
+  padding: 1.5rem 2rem;
+}
+
+.header-content-note-2 {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.course-title-2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #00d4ff, #0099ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.content-wrapper-note-2 {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.content-section-note-2 {
+  margin-bottom: 3rem;
+  animation: fade-in-2 0.5s ease-out;
+}
+
+.section-header-note-2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #00d4ff;
+}
+
+.section-icon-2 {
+  color: #00d4ff;
+  width: 24px;
+  height: 24px;
+}
+
+.section-header-note-2 h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.section-divider-2 {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin: 3rem 0;
+}
+
+/* Markdown Content */
+.markdown-content-2 {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 1.25rem;
+  line-height: 1.8;
+}
+
+.markdown-content-2 h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #00d4ff;
+}
+
+.markdown-content-2 h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content-2 h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #00d4ff;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content-2 p {
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.markdown-content-2 ul,
+.markdown-content-2 ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-content-2 li {
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.markdown-content-2 strong {
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+.markdown-content-2 code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+  color: #64c8ff;
+}
+
+.markdown-content-2 pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+/* Chapters Grid */
+.chapters-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.chapter-card-2 {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.chapter-card-2:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 212, 255, 0.1);
+}
+
+.chapter-card-2.active {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.chapter-number-2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #00d4ff, #0099ff);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.chapter-title-2 {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.chapter-check-2 {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: #00d4ff;
+}
+
+@keyframes fade-in-2 {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .course-title-2 {
+    font-size: 1.5rem;
+  }
+
+  .header-gradient-2 {
+    padding: 1rem;
+  }
+
+  .content-wrapper-note-2 {
+    padding: 1rem;
+  }
+
+  .markdown-content-2 {
+    padding: 1.5rem;
+  }
+
+  .chapters-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

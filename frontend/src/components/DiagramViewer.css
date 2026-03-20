@@ -1,0 +1,31 @@
+.diagram-container {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+  backdrop-filter: blur(10px);
+}
+
+.diagram-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  padding: 1rem;
+}
+
+.diagram-wrapper svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .diagram-container {
+    padding: 1rem;
+  }
+
+  .diagram-wrapper {
+    min-height: 200px;
+  }
+}
