@@ -41,16 +41,31 @@ export async function embedWithGemini(text) {
     console.log("🔹 Generating embedding...");
 
     const result = await ai.models.embedContent({
-      model: "text-embedding-004", // ✅ WORKING MODEL
+      model: "gemini-embedding-001",
       contents: text,
+      config: {
+        outputDimensionality: 768,  // Truncate to match Pinecone index dimension
+      },
     });
 
-    // ✅ Safety check
-    if (!result.embedding || !result.embedding.values) {
+    // Debug: log response keys to diagnose structure
+    console.log("🔹 Embedding response keys:", Object.keys(result));
+
+    // ✅ Handle both possible response structures
+    let values = null;
+    if (result.embedding && result.embedding.values) {
+      values = result.embedding.values;
+    } else if (result.embeddings && result.embeddings.length > 0 && result.embeddings[0].values) {
+      values = result.embeddings[0].values;
+    }
+
+    if (!values || values.length === 0) {
+      console.error("❌ Full embedding response:", JSON.stringify(result, null, 2));
       throw new Error("Invalid embedding response");
     }
 
-    return result.embedding.values;
+    console.log("✅ Embedding generated, dimension:", values.length);
+    return values;
   } catch (err) {
     console.error("❌ Gemini Embedding Error:", err.message);
     return [];
