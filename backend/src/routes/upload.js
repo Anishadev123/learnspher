@@ -22,28 +22,22 @@ const upload = multer({ dest: uploadDir });
 
 router.post("/", upload.single("file"), async (req, res) => {
   try {
-<<<<<<< HEAD
     console.log("📂 Processing new upload...");
-=======
-    console.log("📂 processing new upload...");
->>>>>>> 539544f362f62255fd334c789173601b3328f803
     console.log("📂 Body:", req.body);
 
     const { notebookId, sourceType, url, text } = req.body;
     const file = req.file;
 
-<<<<<<< HEAD
     let storedPath = null;
 
-    // Upload file to Cloudinary (DO NOT delete local file yet)
+    // 1️⃣ Upload file to Cloudinary if present
     if (file) {
-      console.log("📂 File received:", file.originalname);
-
+      console.log("📂 File received:", file.originalname, file.path);
       const uploaded = await uploadToCloudinary(file.path);
-      storedPath = uploaded.secure_url; // ✅ correct
+      storedPath = uploaded.secure_url; 
     }
 
-    // Normalize type
+    // 2️⃣ Normalize & Detect Source Type
     let type = sourceType;
     if (type === "website") type = "url";
 
@@ -57,59 +51,26 @@ router.post("/", upload.single("file"), async (req, res) => {
         : text
         ? "text"
         : "unknown";
-=======
-    if (file) {
-      console.log("📂 File received:", file.originalname, file.path);
-    }
-
-    // Upload PDF to Cloudinary only if present
-    let storedPath = null;
-    if (file) {
-      const uploaded = await uploadToCloudinary(file.path);
-      storedPath = uploaded.url;
-    }
-
-    // ⭐ NORMALIZE TYPE: 'website' -> 'url'
-    let type = sourceType;
-    if (type === "website") type = "url";
-
-    // Fallback detection
-    if (!type) {
-      type = file ? "pdf" : url ? (url.includes("youtu") ? "youtube" : "url") : text ? "text" : "unknown";
->>>>>>> 539544f362f62255fd334c789173601b3328f803
     }
 
     console.log(`📂 Final Source Type: ${type}`);
 
-<<<<<<< HEAD
-=======
-    // Create the source entry
->>>>>>> 539544f362f62255fd334c789173601b3328f803
+    // 3️⃣ Create the source entry in database
     const src = await Source.create({
       notebookId,
       type,
       originalName: file ? file.originalname : url || "pasted_text",
-<<<<<<< HEAD
       storagePath: storedPath,
       status: "pending",
       metadata: {
         url: url || null,
         text: text || null,
       },
-=======
-      storagePath: storedPath, // Cloudinary URL or null
-      status: "pending",
-      metadata: { url },
->>>>>>> 539544f362f62255fd334c789173601b3328f803
     });
 
     console.log(`✅ Source created: ${src._id}`);
 
-<<<<<<< HEAD
-    // Send to ingestion queue (file still exists here)
-=======
-    // QUEUE THE INGESTION
->>>>>>> 539544f362f62255fd334c789173601b3328f803
+    // 4️⃣ Queue for background ingestion
     await ingestionQueue.add("ingest", {
       sourceId: src._id.toString(),
       notebookId,
@@ -119,10 +80,6 @@ router.post("/", upload.single("file"), async (req, res) => {
     });
 
     return res.json({ ok: true, sourceId: src._id });
-<<<<<<< HEAD
-
-=======
->>>>>>> 539544f362f62255fd334c789173601b3328f803
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     return res.status(500).json({ ok: false, error: err.message });

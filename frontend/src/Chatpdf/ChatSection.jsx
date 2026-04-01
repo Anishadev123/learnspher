@@ -44,15 +44,16 @@ export default function ChatSection({ messages, onSendMessage, onAddSource, sele
             <div className="input-wrapper-3">
               <input
                 type="text"
-                placeholder="Ask a question about your document..."
+                placeholder={selectedNotebook ? "Ask a question about your document..." : "Select or create a notebook to start chatting"}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="chat-input-3"
+                disabled={!selectedNotebook}
               />
-              <button type="button" className="attachment-btn-3" title="Attach file">
+              <button type="button" className="attachment-btn-3" title="Attach file" disabled={!selectedNotebook}>
                 <Paperclip size={20} />
               </button>
-              <button type="submit" className="send-btn-3" title="Send message">
+              <button type="submit" className="send-btn-3" title="Send message" disabled={!selectedNotebook || !input.trim()}>
                 <Send size={20} />
               </button>
             </div>

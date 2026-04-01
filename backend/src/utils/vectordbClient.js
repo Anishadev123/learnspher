@@ -1,69 +1,93 @@
-// ⭐ Load .env first
+// ⭐ Load environment variables
 import dotenv from "dotenv";
 dotenv.config();
 
+// ⭐ Imports
 import { Pinecone } from "@pinecone-database/pinecone";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-// Debug
+// ---------------------------
+// 🔍 Debug Logs
+// ---------------------------
 console.log("🔍 Pinecone Index:", process.env.PINECONE_INDEX);
 console.log("🔍 Gemini key loaded:", !!process.env.GEMINI_API_KEY);
 
-// ⭐ Initialize Pinecone
+// ---------------------------
+// 🌲 Initialize Pinecone
+// ---------------------------
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY,
 });
 
 export const index = pinecone.index(process.env.PINECONE_INDEX);
 
-// ⭐ Initialize Gemini Client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// ---------------------------
+// 🤖 Initialize Gemini (IMPORTANT FIX)
+// ---------------------------
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+  // ❌ DO NOT USE apiVersion: "v1"
+});
 
 // ---------------------------
-// 🔵 Gemini EMBEDDING Function
+// 🔵 EMBEDDING FUNCTION (FIXED)
 // ---------------------------
 export async function embedWithGemini(text) {
   try {
-    const model = genAI.getGenerativeModel({
-      model: "models/gemini-embedding-001", // 768-dim
+    if (!text || text.trim().length === 0) {
+      throw new Error("Empty input text");
+    }
+
+    console.log("🔹 Generating embedding...");
+
+    const result = await ai.models.embedContent({
+      model: "text-embedding-004", // ✅ WORKING MODEL
+      contents: text,
     });
 
-    const result = await model.embedContent({
-      content: { role: "user", parts: [{ text }] },
-      outputDimensionality: 768,
-    });
-    return result.embedding.values; // 768-dim float array
+    // ✅ Safety check
+    if (!result.embedding || !result.embedding.values) {
+      throw new Error("Invalid embedding response");
+    }
+
+    return result.embedding.values;
   } catch (err) {
-    console.error("❌ Gemini Embedding Error:", err);
+    console.error("❌ Gemini Embedding Error:", err.message);
     return [];
   }
 }
 
 // ---------------------------
-// 🔼 Upsert vectors (Pinecone integrated mode)
+// 🔼 UPSERT VECTORS
 // ---------------------------
 export async function upsertVectors(vectors) {
   try {
+    if (!vectors || vectors.length === 0) {
+      throw new Error("No vectors to upsert");
+    }
+
     await index.upsert(vectors);
+
     console.log("✔ Vectors upserted:", vectors.length);
   } catch (err) {
-    console.error("❌ Pinecone Upsert Error:", err);
+    console.error("❌ Pinecone Upsert Error:", err.message);
   }
 }
 
 // ---------------------------
-// 🔍 Query Pinecone with Gemini embeddings
+// 🔍 QUERY VECTORS (RAG SEARCH)
 // ---------------------------
 export async function queryVectors(questionText, topK = 6, filter = {}) {
   try {
-    console.log("🔍 Generating Gemini embedding for query...");
+    console.log("🔍 Generating embedding for query...");
+
     const vector = await embedWithGemini(questionText);
 
     if (!vector || vector.length === 0) {
       throw new Error("Empty query embedding");
     }
 
-    console.log("🔍 Querying Pinecone with filter:", JSON.stringify(filter));
+    console.log("🔍 Querying Pinecone...");
 
     const queryRequest = {
       vector,
@@ -78,9 +102,11 @@ export async function queryVectors(questionText, topK = 6, filter = {}) {
 
     const response = await index.query(queryRequest);
 
+    console.log("🔍 Matches found:", response.matches?.length || 0);
+
     return response.matches || [];
   } catch (err) {
-    console.error("❌ Pinecone Query Error:", err);
+    console.error("❌ Pinecone Query Error:", err.message);
     return [];
   }
 }

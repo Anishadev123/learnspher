@@ -5,7 +5,13 @@ import { uploadToCloudinary } from './cloudinary.js';
 
 export async function createPdfReport(text, notebookId) {
   const filename = `report_${notebookId}_${Date.now()}.pdf`;
-  const outPath = path.join('/tmp', filename);
+  
+  // Ensure we use a valid path for Windows/Unix
+  const tmpDir = path.join(process.cwd(), 'tmp');
+  if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir, { recursive: true });
+  }
+  const outPath = path.join(tmpDir, filename);
 
   return new Promise((resolve, reject) => {
     try {
@@ -26,18 +32,21 @@ export async function createPdfReport(text, notebookId) {
           // Optionally remove local PDF file
           if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
 
-          // Return Cloudinary URL
-          resolve(upload.url);
+          // Return Cloudinary Secure URL
+          resolve(upload.secure_url || upload.url);
         } catch (err) {
+          console.error("PDF Upload Error:", err);
           reject(err);
         }
       });
 
       stream.on('error', (err) => {
+        console.error("Stream Error in PDF Report:", err);
         reject(err);
       });
 
     } catch (err) {
+      console.error("Catch Error in PDF Report:", err);
       reject(err);
     }
   });

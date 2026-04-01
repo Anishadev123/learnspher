@@ -116,12 +116,7 @@ export default function ChatpdfDashboard() {
 
       // Refresh notebooks to get the new source listing
       await fetchNotebooks();
-
       setIsAddSourceOpen(false);
-
-      setNotebooks(updated);
-      setIsAddSourceOpen(false);
-
     } catch (err) {
       console.error("Source upload failed:", err);
     }
@@ -174,12 +169,21 @@ export default function ChatpdfDashboard() {
   // CHAT MESSAGE
   // -------------------------------
   const handleSendMessage = async (text) => {
+    if (!selectedNotebook) {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, sender: "ai", text: "⚠️ Please select or create a notebook first!" },
+      ]);
+      return;
+    }
+
     const userMessage = { id: Date.now(), sender: "user", text };
     setMessages((prev) => [...prev, userMessage]);
 
     try {
+      const notebookId = selectedNotebook._id || selectedNotebook.id;
       const res = await fetch(
-        `${API_BASE_URL}/query/${selectedNotebook._id || selectedNotebook.id}`,
+        `${API_BASE_URL}/query/${notebookId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
