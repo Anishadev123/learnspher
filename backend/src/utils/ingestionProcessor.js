@@ -71,16 +71,11 @@ export async function processIngestionJob(data) {
 
   // 7️⃣ Update source as ingested
   await Source.findByIdAndUpdate(sourceId, {
-<<<<<<< HEAD
     $set: {
       status: "ingested",
       "metadata.text": rawText,
       "metadata.length": rawText.length,
     }
-=======
-    status: "ingested",
-    metadata: { length: rawText.length },
->>>>>>> 539544f362f62255fd334c789173601b3328f803
   });
 
   // 8️⃣ Delete uploaded file
