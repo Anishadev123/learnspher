@@ -52,6 +52,7 @@ export default function ChatpdfDashboard() {
   };
 
   const [activeSource, setActiveSource] = useState(null);
+  const [notesVersion, setNotesVersion] = useState(0);
 
   // -------------------------------
   // CREATE NOTEBOOK
@@ -228,6 +229,7 @@ export default function ChatpdfDashboard() {
         onNewNotebook={() => setIsCreateNotebookOpen(true)}
         onDeleteNotebook={handleDeleteNotebook}
         onDeleteSource={handleDeleteSource}
+        notesVersion={notesVersion}
       />
 
       <ChatSection
@@ -240,9 +242,7 @@ export default function ChatpdfDashboard() {
       />
 
 
-      <RightPanel activeSource={activeSource} />
-
-      <RightPanel />
+      <RightPanel activeSource={activeSource} selectedNotebook={selectedNotebook} onNoteSaved={() => setNotesVersion(v => v + 1)} />
 
 
       {isCreateNotebookOpen && (

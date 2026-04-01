@@ -1,9 +1,12 @@
 "use client";
 
-import { X, ExternalLink } from "lucide-react";
+import { X, ExternalLink, Play, Globe } from "lucide-react";
+import { useState } from "react";
 import "./SourceViewer.css";
 
 export default function SourceViewer({ source, onClose }) {
+    const [iframeError, setIframeError] = useState(false);
+
     if (!source) return null;
 
     const renderContent = () => {
@@ -17,57 +20,81 @@ export default function SourceViewer({ source, onClose }) {
                     />
                 );
 
-            case "youtube":
+            case "youtube": {
                 let videoId = "";
-
                 try {
                     const urlStr = source.metadata?.url || source.storagePath || "";
-                    if (!urlStr) throw new Error("No URL provided");
-
-                    const urlObj = new URL(urlStr);
-
-                    if (urlObj.hostname.includes("youtube.com")) {
-                        videoId = urlObj.searchParams.get("v");
-
-                        if (urlObj.pathname.includes("/embed/")) {
-                            videoId = urlObj.pathname.split("/embed/")[1];
+                    if (urlStr) {
+                        const urlObj = new URL(urlStr);
+                        if (urlObj.hostname.includes("youtube.com")) {
+                            videoId = urlObj.searchParams.get("v");
+                            if (urlObj.pathname.includes("/embed/"))
+                                videoId = urlObj.pathname.split("/embed/")[1];
+                        } else if (urlObj.hostname.includes("youtu.be")) {
+                            videoId = urlObj.pathname.slice(1);
                         }
-                    } else if (urlObj.hostname.includes("youtu.be")) {
-                        videoId = urlObj.pathname.slice(1);
-                    }
-
-                    if (!videoId) {
-                        const regExp =
-                            /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-                        const match = urlStr.match(regExp);
-                        if (match && match[2].length === 11) {
-                            videoId = match[2];
+                        if (!videoId) {
+                            const match = urlStr.match(/(?:v=|\/)([\w-]{11})/);
+                            if (match) videoId = match[1];
                         }
                     }
                 } catch (e) {
                     console.error("Invalid YouTube URL", e);
                 }
 
+                const youtubeUrl = source.metadata?.url || source.storagePath || "";
+                const thumbnailUrl = videoId
+                    ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+                    : null;
+
                 return (
-                    <div className="youtube-container">
-                        {videoId ? (
-                            <iframe
-                                width="100%"
-                                height="100%"
-                                src={`https://www.youtube.com/embed/${videoId}`}
-                                title="YouTube video player"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            ></iframe>
-                        ) : (
-                            <div className="error-message">Invalid YouTube URL</div>
+                    <div className="youtube-viewer">
+                        {/* Clickable thumbnail that opens YouTube */}
+                        {videoId && (
+                            <a
+                                href={youtubeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="youtube-thumbnail-link"
+                            >
+                                <img
+                                    src={thumbnailUrl}
+                                    alt="YouTube Thumbnail"
+                                    className="youtube-thumbnail"
+                                    onError={(e) => {
+                                        e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                    }}
+                                />
+                                <div className="youtube-play-overlay">
+                                    <div className="youtube-play-btn">
+                                        <Play size={32} fill="white" />
+                                    </div>
+                                    <span className="youtube-play-text">Watch on YouTube</span>
+                                </div>
+                            </a>
+                        )}
+
+                        {/* Transcript section */}
+                        {source.metadata?.text && (
+                            <div className="extracted-text-container">
+                                <h4 className="extracted-text-title">📝 Extracted Transcript</h4>
+                                <div className="extracted-text-content">
+                                    {source.metadata.text}
+                                </div>
+                            </div>
+                        )}
+
+                        {source.status === "failed" && (
+                            <div className="error-message">
+                                ⚠️ Transcript extraction failed. The video may not have captions available.
+                            </div>
                         )}
                     </div>
                 );
+            }
 
             case "url":
-            case "website":
+            case "website": {
                 const displayUrl =
                     source.metadata?.url ||
                     source.storagePath ||
@@ -75,29 +102,67 @@ export default function SourceViewer({ source, onClose }) {
                     "#";
 
                 return (
-                    <div className="url-container">
-                        <p>External Website:</p>
-                        <a
-                            href={displayUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="external-link"
-                        >
-                            {displayUrl} <ExternalLink size={16} />
-                        </a>
-                        <p className="note">
-                            Websites cannot be embedded directly due to security restrictions.
-                            Please open in a new tab.
-                        </p>
+                    <div className="website-viewer">
+                        {/* Try to show the website in an iframe */}
+                        {!iframeError && (
+                            <div className="website-iframe-wrapper">
+                                <iframe
+                                    src={displayUrl}
+                                    className="website-frame"
+                                    title="Website Viewer"
+                                    sandbox="allow-same-origin allow-scripts"
+                                    onError={() => setIframeError(true)}
+                                    onLoad={(e) => {
+                                        // Some sites block iframe silently
+                                        try {
+                                            const doc = e.target.contentDocument;
+                                            if (!doc || !doc.body || doc.body.innerHTML === '') {
+                                                setIframeError(true);
+                                            }
+                                        } catch {
+                                            // Cross-origin — iframe loaded but we can't access it (good)
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )}
+
+                        {/* Link bar */}
+                        <div className="source-link-bar">
+                            <a
+                                href={displayUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="external-link"
+                            >
+                                <Globe size={14} /> Open in New Tab <ExternalLink size={14} />
+                            </a>
+                        </div>
+
+                        {/* Show extracted text if iframe fails or as supplement */}
+                        {(iframeError || !displayUrl.startsWith('http')) && source.metadata?.text && (
+                            <div className="extracted-text-container">
+                                <h4 className="extracted-text-title">📄 Extracted Content</h4>
+                                <div className="extracted-text-content">
+                                    {source.metadata.text}
+                                </div>
+                            </div>
+                        )}
+
+                        {source.status === "pending" && (
+                            <p className="note">⏳ Content is being extracted...</p>
+                        )}
+                        {source.status === "failed" && (
+                            <div className="error-message">⚠️ Failed to extract content from this website.</div>
+                        )}
                     </div>
                 );
+            }
 
             case "text":
                 return (
                     <div className="text-container">
-                        <pre>
-                            {source.metadata?.text || "No text content available."}
-                        </pre>
+                        <pre>{source.metadata?.text || "No text content available."}</pre>
                     </div>
                 );
 
@@ -110,17 +175,24 @@ export default function SourceViewer({ source, onClose }) {
         }
     };
 
+    const statusBadge = source.status && (
+        <span className={`status-badge status-${source.status}`}>
+            {source.status === "ingested" ? "✅ Ready" :
+                source.status === "pending" ? "⏳ Processing" :
+                    source.status === "failed" ? "❌ Failed" : source.status}
+        </span>
+    );
+
     return (
         <div className="source-viewer-container">
             <div className="source-viewer-header">
-                <h3 className="source-viewer-title">
-                    {source.originalName || "Source View"}
-                </h3>
-                <button
-                    className="close-btn"
-                    onClick={onClose}
-                    title="Close Source"
-                >
+                <div className="source-viewer-title-group">
+                    <h3 className="source-viewer-title">
+                        {source.originalName || "Source View"}
+                    </h3>
+                    {statusBadge}
+                </div>
+                <button className="close-btn" onClick={onClose} title="Close Source">
                     <X size={20} />
                 </button>
             </div>

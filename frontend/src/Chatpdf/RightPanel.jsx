@@ -1,46 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./RightPanel.css";
 import {
-  Volume2,
+  Lightbulb,
   BookOpen,
   BarChart3,
   FileText,
   Edit3,
   ChevronDown,
+  ExternalLink,
+  Play,
+  Globe,
+  BookMarked,
+  Loader2,
 } from "lucide-react";
+import { API_BASE_URL } from "./api";
 
-export default function RightPanel({ activeSource }) {
+export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved }) {
   const [expandedSection, setExpandedSection] = useState(null);
-
-  // Tool states
   const [loading, setLoading] = useState(false);
   const [studyGuide, setStudyGuide] = useState(null);
   const [reportData, setReportData] = useState(null);
+  const [resources, setResources] = useState(null);
 
-  // Modal state
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
+  const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
 
-  // 🔊 AUDIO
-  const handleAudio = async () => {
-    if (!activeSource) return alert("Select a source first!");
-    setLoading(true);
+  // Notes state
+  const [noteText, setNoteText] = useState("");
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  // Reset cached data when source changes
+  useEffect(() => {
+    setResources(null);
+    setStudyGuide(null);
+    setReportData(null);
+  }, [activeSource?._id]);
+
+  // Load note when source changes
+  useEffect(() => {
+    if (!activeSource?._id) {
+      setNoteText("");
+      return;
+    }
+    const loadNote = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/notes/source/${activeSource._id}`);
+        const notes = await res.json();
+        setNoteText(notes.length > 0 ? notes[0].text : "");
+      } catch (err) {
+        console.error("Failed to load note:", err);
+      }
+    };
+    loadNote();
+  }, [activeSource?._id]);
+
+  // Save note
+  const handleSaveNote = async () => {
+    if (!activeSource || !selectedNotebook) return alert("Select a source first!");
+    if (!noteText.trim()) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/tools/audio/${activeSource._id}`,
-        { method: "POST" }
-      );
+      const res = await fetch(`${API_BASE_URL}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceId: activeSource._id,
+          notebookId: selectedNotebook._id || selectedNotebook.id,
+          text: noteText,
+        }),
+      });
       const data = await res.json();
+      if (data.ok) {
+        setNoteSaved(true);
+        setTimeout(() => setNoteSaved(false), 2000);
+        if (onNoteSaved) onNoteSaved();
+      }
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      alert("Failed to save note");
+    }
+  };
 
-      if (data.summary) {
-        const utterance = new SpeechSynthesisUtterance(data.summary);
-        speechSynthesis.speak(utterance);
+  // 💡 SUGGEST RESOURCES
+  const handleSuggestResources = async () => {
+    if (!activeSource) return alert("Select a source first!");
+    if (resources) { setIsResourceModalOpen(true); return; }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/tools/suggest/${activeSource._id}`, { method: "POST" });
+      const data = await res.json();
+      if (data.ok && data.resources) {
+        setResources(data.resources);
+        setIsResourceModalOpen(true);
+      } else {
+        alert(data.error || "Failed to get suggestions");
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to generate audio");
+      alert("Failed to suggest resources");
     } finally {
       setLoading(false);
     }
@@ -48,22 +108,19 @@ export default function RightPanel({ activeSource }) {
 
   // 📘 STUDY GUIDE
   const handleStudy = async () => {
-    if (!activeSource) return alert("Select a source first!");
-
-    if (studyGuide) {
-      setIsStudyModalOpen(true);
-      return;
-    }
+    if (!selectedNotebook) return alert("Select a notebook first!");
+    if (studyGuide) { setIsStudyModalOpen(true); return; }
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/tools/study/${activeSource._id}`,
-        { method: "POST" }
-      );
+      const notebookId = selectedNotebook._id || selectedNotebook.id;
+      const res = await fetch(`${API_BASE_URL}/query/${notebookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: "Create a comprehensive study guide for this content", mode: "study_guide" }),
+      });
       const data = await res.json();
-
-      setStudyGuide(data.guide);
+      setStudyGuide(data.answer);
       setIsStudyModalOpen(true);
     } catch (err) {
       console.error(err);
@@ -75,16 +132,17 @@ export default function RightPanel({ activeSource }) {
 
   // 📊 REPORT
   const handleReport = async () => {
-    if (!activeSource) return alert("Select a source first!");
+    if (!selectedNotebook) return alert("Select a notebook first!");
     setLoading(true);
-
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/tools/report/${activeSource._id}`
-      );
+      const notebookId = selectedNotebook._id || selectedNotebook.id;
+      const res = await fetch(`${API_BASE_URL}/query/${notebookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: "Give a brief analytics report: word count estimate, key topics count, difficulty level, estimated reading time", mode: "answer" }),
+      });
       const data = await res.json();
-
-      setReportData(data);
+      setReportData(data.answer);
     } catch (err) {
       console.error(err);
       alert("Failed to generate report");
@@ -93,55 +151,36 @@ export default function RightPanel({ activeSource }) {
     }
   };
 
-  // 📄 PDF
-  const handleSummaryPDF = () => {
-    if (!activeSource) return alert("Select a source first!");
-    window.open(
-      `http://localhost:5000/api/tools/summary-pdf/${activeSource._id}`,
-      "_blank"
-    );
+  // 📄 SUMMARY
+  const handleSummary = async () => {
+    if (!selectedNotebook) return alert("Select a notebook first!");
+    setLoading(true);
+    try {
+      const notebookId = selectedNotebook._id || selectedNotebook.id;
+      const res = await fetch(`${API_BASE_URL}/query/${notebookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: "Create a detailed summary of all the content", mode: "summary" }),
+      });
+      const data = await res.json();
+      const win = window.open("", "_blank");
+      win.document.write(`<html><head><title>Summary</title><style>body{font-family:system-ui;padding:2rem;max-width:800px;margin:auto;line-height:1.6;}</style></head><body><h1>Summary</h1><pre style="white-space:pre-wrap">${data.answer}</pre></body></html>`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate summary");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const features = [
+    { id: "resources", icon: Lightbulb, label: "Suggest Resources", description: "AI-suggested study materials", action: handleSuggestResources, content: null },
+    { id: "guide", icon: BookOpen, label: "Study Guide", description: "Key concepts & topics", action: handleStudy, content: null },
     {
-      id: "audio",
-      icon: Volume2,
-      label: "Audio Overview",
-      description: "Listen to document summary",
-      action: handleAudio,
-      content: null,
+      id: "reports", icon: BarChart3, label: "Reports", description: "Analytics & insights", action: handleReport,
+      content: reportData ? <div className="report-content-3"><pre style={{ whiteSpace: "pre-wrap", color: "#e2e8f0", fontSize: "12px" }}>{reportData}</pre></div> : null,
     },
-    {
-      id: "guide",
-      icon: BookOpen,
-      label: "Study Guide",
-      description: "Key concepts & topics",
-      action: handleStudy,
-      content: null,
-    },
-    {
-      id: "reports",
-      icon: BarChart3,
-      label: "Reports",
-      description: "Analytics & insights",
-      action: handleReport,
-      content: reportData ? (
-        <div className="report-content-3">
-          <p><strong>Words:</strong> {reportData.wordCount}</p>
-          <p><strong>Characters:</strong> {reportData.characterCount}</p>
-          <p><strong>Reading Time:</strong> {reportData.readingTime} min</p>
-          <p><strong>Difficulty:</strong> {reportData.difficulty}</p>
-        </div>
-      ) : null,
-    },
-    {
-      id: "summary",
-      icon: FileText,
-      label: "Summary PDF",
-      description: "Downloadable summary",
-      action: handleSummaryPDF,
-      content: null,
-    },
+    { id: "summary", icon: FileText, label: "Summary", description: "Generate content summary", action: handleSummary, content: null },
   ];
 
   return (
@@ -155,65 +194,29 @@ export default function RightPanel({ activeSource }) {
           {features.map((feature) => {
             const Icon = feature.icon;
             const isExpanded = expandedSection === feature.id;
-
             return (
-              <div
-                key={feature.id}
-                className={`feature-card-3 ${
-                  isExpanded ? "expanded-3" : ""
-                }`}
-              >
-                <div
-                  className="feature-header-3"
-                  onClick={() =>
-                    setExpandedSection(isExpanded ? null : feature.id)
-                  }
-                >
+              <div key={feature.id} className={`feature-card-3 ${isExpanded ? "expanded-3" : ""}`}>
+                <div className="feature-header-3" onClick={() => setExpandedSection(isExpanded ? null : feature.id)}>
                   <Icon size={24} className="feature-icon-3" />
                   <div className="feature-text-3">
                     <p className="feature-label-3">{feature.label}</p>
-                    <p className="feature-description-3">
-                      {feature.description}
-                    </p>
+                    <p className="feature-description-3">{feature.description}</p>
                   </div>
-                  <ChevronDown
-                    className={`chevron-3 ${
-                      isExpanded ? "rotated-3" : ""
-                    }`}
-                    size={20}
-                  />
+                  <ChevronDown className={`chevron-3 ${isExpanded ? "rotated-3" : ""}`} size={20} />
                 </div>
-
                 {isExpanded && (
                   <div className="feature-content-3">
                     {!feature.content && !loading && (
                       <>
-                        <p>
-                          {activeSource
-                            ? "Ready to generate."
-                            : "Select a source first."}
-                        </p>
-                        <button
-                          className="feature-btn-3"
-                          onClick={feature.action}
-                          disabled={!activeSource}
-                        >
-                          Generate
-                        </button>
+                        <p>{selectedNotebook ? "Ready to generate." : "Select a notebook first."}</p>
+                        <button className="feature-btn-3" onClick={feature.action} disabled={!selectedNotebook}>Generate</button>
                       </>
                     )}
-
-                    {loading && <p>Generating...</p>}
-
+                    {loading && <div className="loading-indicator"><Loader2 size={16} className="spin" /> Generating...</div>}
                     {feature.content && (
                       <>
                         {feature.content}
-                        <button
-                          className="regen-btn-3"
-                          onClick={feature.action}
-                        >
-                          Regenerate
-                        </button>
+                        <button className="regen-btn-3" onClick={feature.action}>Regenerate</button>
                       </>
                     )}
                   </div>
@@ -223,47 +226,102 @@ export default function RightPanel({ activeSource }) {
           })}
         </div>
 
-        {/* NOTES */}
+        {/* NOTES SECTION */}
         <div className="notes-section-3">
           <div className="notes-header-3">
             <Edit3 size={20} />
             <h3>Notes</h3>
+            {noteSaved && <span className="note-saved-badge">✅ Saved!</span>}
           </div>
-
           <textarea
             className="notes-textarea-3"
-            placeholder="Take notes while studying..."
+            placeholder={activeSource ? "Take notes while studying..." : "Select a source to take notes"}
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            disabled={!activeSource}
           />
-
-          <button className="save-notes-btn-3">Save Notes</button>
+          <button
+            className="save-notes-btn-3"
+            onClick={handleSaveNote}
+            disabled={!activeSource || !noteText.trim()}
+          >
+            Save Notes
+          </button>
         </div>
       </div>
 
-      {/* 📘 STUDY GUIDE MODAL */}
+      {/* STUDY GUIDE MODAL */}
       {isStudyModalOpen && (
-        <div
-          className="modal-overlay-3"
-          onClick={() => setIsStudyModalOpen(false)}
-        >
-          <div
-            className="modal-content-3"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal-overlay-3" onClick={() => setIsStudyModalOpen(false)}>
+          <div className="modal-content-3" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-3">
-              <div className="modal-title-3">
-                <BookOpen size={20} />
-                Study Guide
-              </div>
-              <button
-                className="modal-close-btn-3"
-                onClick={() => setIsStudyModalOpen(false)}
-              >
-                ✕
-              </button>
+              <div className="modal-title-3"><BookOpen size={20} /> Study Guide</div>
+              <button className="modal-close-btn-3" onClick={() => setIsStudyModalOpen(false)}>✕</button>
             </div>
-
             <div className="modal-body-3">
-              {studyGuide}
+              <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{studyGuide}</pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUGGEST RESOURCES MODAL */}
+      {isResourceModalOpen && resources && (
+        <div className="modal-overlay-3" onClick={() => setIsResourceModalOpen(false)}>
+          <div className="modal-content-3 resource-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-3">
+              <div className="modal-title-3"><Lightbulb size={20} /> Suggested Resources</div>
+              <button className="modal-close-btn-3" onClick={() => setIsResourceModalOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body-3">
+              {resources.youtube?.length > 0 && (
+                <div className="resource-section">
+                  <h3 className="resource-section-title"><Play size={18} /> YouTube Videos</h3>
+                  {resources.youtube.map((r, i) => (
+                    <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="resource-card youtube-card">
+                      <div className="resource-card-icon"><Play size={16} /></div>
+                      <div className="resource-card-info">
+                        <p className="resource-card-title">{r.title}</p>
+                        <p className="resource-card-desc">{r.description}</p>
+                      </div>
+                      <ExternalLink size={14} className="resource-card-link" />
+                    </a>
+                  ))}
+                </div>
+              )}
+              {resources.websites?.length > 0 && (
+                <div className="resource-section">
+                  <h3 className="resource-section-title"><Globe size={18} /> Websites</h3>
+                  {resources.websites.map((r, i) => (
+                    <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="resource-card website-card">
+                      <div className="resource-card-icon"><Globe size={16} /></div>
+                      <div className="resource-card-info">
+                        <p className="resource-card-title">{r.title}</p>
+                        <p className="resource-card-desc">{r.description}</p>
+                      </div>
+                      <ExternalLink size={14} className="resource-card-link" />
+                    </a>
+                  ))}
+                </div>
+              )}
+              {resources.books?.length > 0 && (
+                <div className="resource-section">
+                  <h3 className="resource-section-title"><BookMarked size={18} /> Recommended Books</h3>
+                  {resources.books.map((r, i) => (
+                    <div key={i} className="resource-card book-card">
+                      <div className="resource-card-icon"><BookMarked size={16} /></div>
+                      <div className="resource-card-info">
+                        <p className="resource-card-title">{r.title}</p>
+                        {r.author && <p className="resource-card-author">by {r.author}</p>}
+                        <p className="resource-card-desc">{r.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button className="regen-btn-3" style={{ marginTop: "1rem" }} onClick={() => { setResources(null); handleSuggestResources(); }}>
+                🔄 Regenerate Suggestions
+              </button>
             </div>
           </div>
         </div>

@@ -8,7 +8,7 @@ const router = express.Router();
 // ✅ Initialize NEW Gemini SDK
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
-  apiVersion: "v1", // Explicitly use v1 for reliability 
+  // ❌ DO NOT use apiVersion: "v1" — it breaks generateContent
 });
 
 router.post("/:notebookId", async (req, res) => {
@@ -75,6 +75,7 @@ Answer:
     });
 
     const answer = result.text;
+    console.log("✅ Gemini answer:", answer?.substring(0, 200));
 
     // ===========================
     // MODE: ANSWER

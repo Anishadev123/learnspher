@@ -1,4 +1,4 @@
-/* Pure CSS with -3 suffix and all colors inlined */
+/* RightPanel.css */
 .right-panel-3 {
   display: flex;
   flex-direction: column;
@@ -28,10 +28,7 @@
 }
 
 .feature-card-3 {
-  background-color: #0f46c4;
-
   background-color: #7a97db;
-
   border: 1px solid #334155;
   border-radius: 8px;
   cursor: pointer;
@@ -97,15 +94,8 @@
 }
 
 @keyframes slideDown-3 {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .feature-btn-3 {
@@ -126,6 +116,50 @@
   transform: translateY(-2px);
 }
 
+.feature-btn-3:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.regen-btn-3 {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  background: transparent;
+  color: #818cf8;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.regen-btn-3:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+}
+
+/* Loading */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #818cf8;
+  font-size: 12px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Notes */
 .notes-section-3 {
   display: flex;
   flex-direction: column;
@@ -141,15 +175,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.notes-icon-3 {
-  color: #6366f1;
-}
-
-.notes-title-3 {
-  font-size: 13px;
-  font-weight: 600;
   color: #f1f5f9;
 }
 
@@ -178,11 +203,6 @@
   color: #94a3b8;
 }
 
-.notes-footer-3 {
-  display: flex;
-  gap: 8px;
-}
-
 .save-notes-btn-3 {
   flex: 1;
   padding: 6px 12px;
@@ -204,10 +224,9 @@
   .right-panel-3 {
     display: none;
   }
-<<<<<<< HEAD
 }
 
-/* Modal Styles */
+/* ======================== MODAL ======================== */
 .modal-overlay-3 {
   position: fixed;
   top: 0;
@@ -231,20 +250,13 @@
   border: 1px solid #334155;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   animation: modalSlideIn-3 0.3s ease-out;
 }
 
 @keyframes modalSlideIn-3 {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header-3 {
@@ -269,8 +281,9 @@
   border: none;
   color: #94a3b8;
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 8px;
   border-radius: 4px;
+  font-size: 16px;
   transition: all 0.2s;
 }
 
@@ -287,31 +300,106 @@
   line-height: 1.6;
 }
 
-.study-guide-content-3 {
-  white-space: pre-wrap;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* ======================== RESOURCE CARDS ======================== */
+.resource-modal {
+  max-width: 700px;
 }
 
-.study-guide-content-3 h1,
-.study-guide-content-3 h2,
-.study-guide-content-3 h3 {
-  color: #6366f1;
-  margin-top: 1em;
-  margin-bottom: 0.5em;
+.resource-section {
+  margin-bottom: 1.5rem;
 }
 
-.study-guide-content-3 ul,
-.study-guide-content-3 ol {
-  padding-left: 20px;
-  margin-bottom: 1em;
+.resource-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #334155;
 }
 
-.study-guide-content-3 li {
-  margin-bottom: 0.5em;
+.resource-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  cursor: pointer;
 }
 
-.study-guide-content-3 strong {
-  color: #f8fafc;
-=======
->>>>>>> 539544f362f62255fd334c789173601b3328f803
+.resource-card:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  transform: translateX(4px);
+}
+
+.resource-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.youtube-card .resource-card-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.website-card .resource-card-icon {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.book-card .resource-card-icon {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.book-card {
+  cursor: default;
+}
+
+.book-card:hover {
+  transform: none;
+}
+
+.resource-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.resource-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+}
+
+.resource-card-author {
+  font-size: 11px;
+  color: #818cf8;
+  margin-bottom: 2px;
+}
+
+.resource-card-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.resource-card-link {
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 2px;
 }

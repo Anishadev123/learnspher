@@ -227,3 +227,114 @@
 .new-chat-btn-3:hover {
   transform: translateY(-2px);
 }
+
+/* Note indicator on source items */
+.note-indicator {
+  color: #fbbf24;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.note-indicator:hover {
+  color: #f59e0b;
+}
+
+.notebook-source-item:hover .delete-btn-3 {
+  opacity: 1;
+}
+
+/* Note saved badge */
+.note-saved-badge {
+  font-size: 0.7rem;
+  color: #6ee7b7;
+  margin-left: auto;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Note view modal */
+.note-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.note-modal {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 550px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  animation: noteModalIn 0.25s ease-out;
+}
+
+@keyframes noteModalIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.note-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #334155;
+}
+
+.note-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-modal-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.note-modal-close:hover {
+  background: rgba(255,255,255,0.1);
+  color: #f1f5f9;
+}
+
+.note-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.note-modal-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.note-modal-date {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 1rem;
+  text-align: right;
+}
