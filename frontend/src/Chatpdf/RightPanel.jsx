@@ -23,9 +23,11 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
   const [studyGuide, setStudyGuide] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [resources, setResources] = useState(null);
+  const [summaryData, setSummaryData] = useState(null);
 
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
 
   // Notes state
   const [noteText, setNoteText] = useState("");
@@ -36,6 +38,7 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
     setResources(null);
     setStudyGuide(null);
     setReportData(null);
+    setSummaryData(null);
   }, [activeSource?._id]);
 
   // Load note when source changes
@@ -154,6 +157,8 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
   // 📄 SUMMARY
   const handleSummary = async () => {
     if (!selectedNotebook) return alert("Select a notebook first!");
+    if (summaryData) { setIsSummaryModalOpen(true); return; }
+
     setLoading(true);
     try {
       const notebookId = selectedNotebook._id || selectedNotebook.id;
@@ -163,11 +168,15 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
         body: JSON.stringify({ question: "Create a detailed summary of all the content", mode: "summary" }),
       });
       const data = await res.json();
-      const win = window.open("", "_blank");
-      win.document.write(`<html><head><title>Summary</title><style>body{font-family:system-ui;padding:2rem;max-width:800px;margin:auto;line-height:1.6;}</style></head><body><h1>Summary</h1><pre style="white-space:pre-wrap">${data.answer}</pre></body></html>`);
+      if (data.answer) {
+        setSummaryData(data.answer);
+        setIsSummaryModalOpen(true);
+      } else {
+        alert("No summary could be generated. Make sure the notebook has sources with ingested content.");
+      }
     } catch (err) {
-      console.error(err);
-      alert("Failed to generate summary");
+      console.error("Summary generation error:", err);
+      alert("Failed to generate summary. Check if the backend is running.");
     } finally {
       setLoading(false);
     }
@@ -180,7 +189,9 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
       id: "reports", icon: BarChart3, label: "Reports", description: "Analytics & insights", action: handleReport,
       content: reportData ? <div className="report-content-3"><pre style={{ whiteSpace: "pre-wrap", color: "#e2e8f0", fontSize: "12px" }}>{reportData}</pre></div> : null,
     },
-    { id: "summary", icon: FileText, label: "Summary", description: "Generate content summary", action: handleSummary, content: null },
+    { id: "summary", icon: FileText, label: "Summary", description: "Generate content summary", action: handleSummary,
+      content: summaryData ? <div className="report-content-3"><pre style={{ whiteSpace: "pre-wrap", color: "var(--text-secondary, #e2e8f0)", fontSize: "12px" }}>{summaryData}</pre></div> : null,
+    },
   ];
 
   return (
@@ -321,6 +332,24 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
               )}
               <button className="regen-btn-3" style={{ marginTop: "1rem" }} onClick={() => { setResources(null); handleSuggestResources(); }}>
                 🔄 Regenerate Suggestions
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUMMARY MODAL */}
+      {isSummaryModalOpen && summaryData && (
+        <div className="modal-overlay-3" onClick={() => setIsSummaryModalOpen(false)}>
+          <div className="modal-content-3" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-3">
+              <div className="modal-title-3"><FileText size={20} /> Summary</div>
+              <button className="modal-close-btn-3" onClick={() => setIsSummaryModalOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body-3">
+              <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{summaryData}</pre>
+              <button className="regen-btn-3" style={{ marginTop: "1rem" }} onClick={() => { setSummaryData(null); setIsSummaryModalOpen(false); handleSummary(); }}>
+                🔄 Regenerate Summary
               </button>
             </div>
           </div>

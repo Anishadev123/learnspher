@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { RotateCcw } from "lucide-react";
+import { BrainCircuit, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import StudyMaterialCard from "./StudyMaterialCard";
 import { getAuth } from "firebase/auth";
 import axios from "axios";
@@ -10,8 +11,8 @@ import "./StudyMaterialSection.css";
 export default function StudyMaterialSection() {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // ✅ Fetch materials from backend (MongoDB)
   const fetchMaterials = async () => {
     try {
       setLoading(true);
@@ -30,11 +31,8 @@ export default function StudyMaterialSection() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("Fetched materials:", res.data);
-
-      // ✅ Include subject & goal properly
       const formatted = res.data.map((item) => ({
-         id: item._id?.$oid || item._id, 
+        id: item._id?.$oid || item._id,
         title: item.title,
         icon: "📚",
         status: "Ready",
@@ -61,28 +59,43 @@ export default function StudyMaterialSection() {
   return (
     <section className="study-material-section">
       <div className="section-header">
-        <h2>Your Study Material</h2>
-        <button className="refresh-btn" onClick={fetchMaterials} disabled={loading}>
-          <RotateCcw size={18} />
-          {loading ? "Refreshing..." : "Refresh"}
+        <div className="section-title-group">
+          <h2>Your Study Material</h2>
+          <span className="material-count">{materials.length} items</span>
+        </div>
+        <button
+          className="ai-studio-btn"
+          onClick={() => navigate("/chat-with-pdf")}
+        >
+          <BrainCircuit size={18} />
+          AI Studio
         </button>
       </div>
 
-      <div className="materials-grid">
-        {materials.length === 0 ? (
-          <p>No study materials found.</p>
-        ) : (
-          materials.map((material) => (
-            
-            <StudyMaterialCard
-              key={material.id}
-               
-              material={material}
-              onDelete={() => handleDelete(material.id)}
-            />
-          ))
-        )}
-      </div>
+      {loading ? (
+        <div className="loading-state">
+          <Loader2 size={24} className="spin-icon" />
+          <p>Loading your materials...</p>
+        </div>
+      ) : (
+        <div className="materials-grid">
+          {materials.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📄</div>
+              <h3>No study materials yet</h3>
+              <p>Create your first study plan to get started!</p>
+            </div>
+          ) : (
+            materials.map((material) => (
+              <StudyMaterialCard
+                key={material.id}
+                material={material}
+                onDelete={() => handleDelete(material.id)}
+              />
+            ))
+          )}
+        </div>
+      )}
     </section>
   );
 }

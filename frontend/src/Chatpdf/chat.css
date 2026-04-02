@@ -1,13 +1,23 @@
-/* Pure CSS with -3 suffix and inline colors */
+/* ============================================
+   AI Studio (Chat with PDF) — Main Container
+   ============================================ */
+
 .chat-pdf-container-3 {
   display: grid;
-  grid-template-columns: 280px 1fr 320px;
+  grid-template-columns: 270px 1fr 300px;
   height: 100vh;
   gap: 0;
-  background-color: #0f172a;
+  background-color: var(--bg-deep);
+  font-family: var(--font-sans);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1280px) {
+  .chat-pdf-container-3 {
+    grid-template-columns: 260px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
   .chat-pdf-container-3 {
     grid-template-columns: 1fr;
   }

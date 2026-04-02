@@ -1,88 +1,84 @@
-/* Pure CSS with -3 suffix and all colors inlined */
+/* ============================================
+   AI Studio — Add Source Modal
+   ============================================ */
+
 .modal-overlay-3 {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn-3 0.2s ease-out;
+  backdrop-filter: blur(6px);
+  animation: overlayFadeIn 0.2s ease-out;
 }
 
-@keyframes fadeIn-3 {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content-3 {
-  background-color: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 12px;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   width: 90%;
-  max-width: 500px;
+  max-width: 480px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  animation: slideUp-3 0.3s ease-out;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideIn 0.3s ease-out;
 }
 
-@keyframes slideUp-3 {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header-3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
-  border-bottom: 1px solid #334155;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.modal-header-3 h2 {
-  font-size: 18px;
+.modal-header-3 h2,
+.modal-title-3 {
+  font-size: 1rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-primary);
 }
 
 .close-btn-3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-muted);
   cursor: pointer;
   border-radius: 6px;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .close-btn-3:hover {
-  background-color: rgba(99, 102, 241, 0.1);
-  color: #f1f5f9;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
 }
 
+/* Source Type Grid */
 .source-type-grid-3 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 20px;
+  gap: 10px;
+  padding: 1.25rem;
 }
 
 .source-type-btn-3 {
@@ -91,38 +87,44 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 24px;
-  background-color: #0f172a;
-  border: 2px solid #334155;
-  border-radius: 8px;
-  color: #f1f5f9;
+  padding: 1.25rem;
+  background-color: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
+  font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 13px;
+  font-size: 0.8rem;
 }
 
 .source-type-btn-3:hover {
-  border-color: #6366f1;
-  background-color: rgba(99, 102, 241, 0.05);
+  border-color: var(--accent-primary);
+  background-color: rgba(16, 185, 129, 0.05);
+  color: var(--text-primary);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
 }
 
+/* Source Form */
 .source-form-3 {
-  padding: 20px;
+  padding: 1.25rem;
 }
 
 .back-btn-3 {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
   background: none;
   border: none;
-  color: #6366f1;
+  color: var(--accent-primary);
   cursor: pointer;
+  font-family: var(--font-sans);
   font-weight: 500;
-  transition: all 0.2s;
+  font-size: 0.8rem;
+  transition: gap var(--transition-fast);
 }
 
 .back-btn-3:hover {
@@ -132,53 +134,55 @@
 .form-group-3 {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group-3 label {
-  font-size: 13px;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .form-group-3 input,
 .form-group-3 textarea {
-  padding: 10px 12px;
-  background-color: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  color: #f1f5f9;
-  font-size: 13px;
-  font-family: inherit;
-  transition: all 0.2s;
+  padding: 0.65rem 0.8rem;
+  background-color: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  transition: all var(--transition-base);
 }
 
 .form-group-3 input:focus,
 .form-group-3 textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
 }
 
 .form-group-3 input::placeholder,
 .form-group-3 textarea::placeholder {
-  color: #94a3b8;
+  color: var(--text-dim);
 }
 
+/* File Upload */
 .file-upload-3 {
-  padding: 24px;
-  background-color: #0f172a;
-  border: 2px dashed #334155;
-  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: var(--bg-deep);
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-sm);
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
 }
 
 .file-upload-3:hover {
-  border-color: #6366f1;
-  background-color: rgba(99, 102, 241, 0.05);
+  border-color: var(--accent-primary);
+  background-color: rgba(16, 185, 129, 0.04);
 }
 
 .file-upload-3 input {
@@ -187,45 +191,48 @@
 
 .file-upload-3 p {
   margin-top: 8px;
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 0.75rem;
+  color: var(--text-dim);
 }
 
+/* Form Actions */
 .form-actions-3 {
   display: flex;
   gap: 8px;
-  margin-top: 20px;
+  margin-top: 1.25rem;
 }
 
 .cancel-btn-3,
 .add-btn-3 {
   flex: 1;
-  padding: 10px;
+  padding: 0.65rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 13px;
+  transition: all var(--transition-base);
+  font-size: 0.8rem;
 }
 
 .cancel-btn-3 {
-  background-color: #0f172a;
-  color: #f1f5f9;
-  border: 1px solid #334155;
+  background-color: var(--bg-deep);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
 }
 
 .cancel-btn-3:hover {
-  background-color: rgba(99, 102, 241, 0.05);
-  border-color: #6366f1;
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .add-btn-3 {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: var(--gradient-primary);
   color: white;
+  box-shadow: 0 2px 8px var(--accent-primary-glow);
 }
 
 .add-btn-3:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--accent-primary-glow);
 }

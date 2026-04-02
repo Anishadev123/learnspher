@@ -7,28 +7,28 @@ import "./StudyMaterialCard.css";
 export default function StudyMaterialCard({ material, onDelete }) {
   const navigate = useNavigate();
 
-  // ✅ Normalize MongoDB ID safely
   const materialId =
     material._id?.$oid || material._id || material.id || "";
 
   const handleView = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Navigating to:", materialId);
 
     if (!materialId) {
-      console.error("❌ No valid material ID found.");
+      console.error("No valid material ID found.");
       return;
     }
 
-    // ✅ Navigate with normalized ID
     navigate(`/study-material/${materialId}`);
   };
 
   return (
     <div className="study-card">
       <div className="card-header">
-        <div className="card-icon">📚</div>
+        <div className="card-header-left">
+          <div className="card-icon">📚</div>
+          <h3 className="card-title">{material.title}</h3>
+        </div>
         <span
           className={`status-badge status-${
             material.status?.toLowerCase() || "initialized"
@@ -39,23 +39,24 @@ export default function StudyMaterialCard({ material, onDelete }) {
       </div>
 
       <div className="card-body">
-        <h3 className="card-title">{material.title}</h3>
-
-        {/* ✅ Show normalized ID */}
-        <p className="material-id">ID: {materialId}</p>
-
         <div className="card-details">
-          <p><strong>Subject:</strong> {material.subject || "N/A"}</p>
-          <p><strong>Goal:</strong> {material.goal || "N/A"}</p>
+          <div className="detail-row">
+            <span className="detail-label">Subject</span>
+            <span className="detail-value">{material.subject || "N/A"}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Goal</span>
+            <span className="detail-value">{material.goal || "N/A"}</span>
+          </div>
         </div>
       </div>
 
       <div className="card-footer">
         <button className="btn-view" onClick={handleView}>
-          <Eye size={16} /> View
+          <Eye size={15} /> View
         </button>
         <button className="btn-delete" onClick={onDelete}>
-          <Trash2 size={16} /> Delete
+          <Trash2 size={15} /> Delete
         </button>
       </div>
     </div>

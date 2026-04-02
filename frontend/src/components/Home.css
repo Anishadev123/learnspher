@@ -12,7 +12,7 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(to right, #6D28D9, #4F46E5);
+  background: linear-gradient(to right, #059669, #10b981);
   color: #fff;
   padding: 18px 50px;
   font-size: 1.3rem;
@@ -37,7 +37,7 @@ body, html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(120deg, #6D28D9, #4F46E5);
+  background: linear-gradient(120deg, #059669, #10b981);
   color: white;
   padding: 100px 80px;
   flex-wrap: wrap;
@@ -68,7 +68,7 @@ body, html {
 
 .btn-primary-3 {
   background: #fff;
-  color: #4F46E5;
+  color: #10b981;
   border: none;
   padding: 12px 32px;
   font-weight: 600;
@@ -97,7 +97,7 @@ body, html {
 
 .features-3 h2 {
   font-size: 2.5rem;
-  color: #4F46E5;
+  color: #10b981;
 }
 
 .subtitle-3 {
@@ -114,7 +114,7 @@ body, html {
 }
 
 .feature-card-3 {
-  background: #f3f4ff;
+  background: #ecfdf5;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -123,11 +123,11 @@ body, html {
 
 .feature-card-3:hover {
   transform: translateY(-8px);
-  background: #ede9fe;
+  background: #d1fae5;
 }
 
 .feature-number-3 {
-  background: #4F46E5;
+  background: #10b981;
   color: #fff;
   width: 36px;
   height: 36px;

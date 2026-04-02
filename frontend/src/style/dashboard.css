@@ -45,7 +45,7 @@
 
         .create-btn {
           width: 100%;
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: white;
           border: none;
           padding: 14px 20px;
@@ -59,7 +59,7 @@
 
         .create-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
         }
 
         .nav-menu {
@@ -127,7 +127,7 @@
         .credits-progress {
           width: 20%;
           height: 100%;
-          background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+          background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
           border-radius: 4px;
         }
 
@@ -139,7 +139,7 @@
 
         .credits-link {
           font-size: 13px;
-          color: #2563eb;
+          color: #10b981;
           text-decoration: none;
           font-weight: 500;
         }
@@ -182,7 +182,7 @@
         }
 
         .welcome-banner {
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: white;
           padding: 40px 48px;
           border-radius: 20px;
@@ -190,7 +190,7 @@
           display: flex;
           align-items: center;
           gap: 32px;
-          box-shadow: 0 10px 40px rgba(37, 99, 235, 0.3);
+          box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
         }
 
         .laptop-icon {
@@ -250,7 +250,7 @@
           position: absolute;
           top: 24px;
           right: 24px;
-          background-color: #2563eb;
+          background-color: #10b981;
           color: white;
           padding: 6px 12px;
           border-radius: 20px;
