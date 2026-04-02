@@ -72,8 +72,8 @@ export default function StudyAnalytics() {
 
     fetchStats();
 
-    // Refresh every 2 minutes
-    const interval = setInterval(fetchStats, 120000);
+    // Refresh every 30 seconds (matches auto-save interval)
+    const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
 

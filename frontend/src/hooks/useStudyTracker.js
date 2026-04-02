@@ -3,6 +3,9 @@ import { getAuth } from 'firebase/auth';
 
 const TRACKING_API = 'http://localhost:8080/api/tracking';
 
+// How often to auto-save session to backend (in ms)
+const AUTO_FLUSH_INTERVAL = 30_000; // 30 seconds
+
 /**
  * useStudyTracker — Passive study time tracking hook
  * 
@@ -34,6 +37,9 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
   const externalClickData = useRef(null);
   const externalLeftAt = useRef(null);
 
+  // Session ID from backend (for updates)
+  const sessionId = useRef(null);
+
   // Activity counters
   const activities = useRef({
     messagesAsked: 0,
@@ -44,7 +50,7 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
     externalClicks: []
   });
 
-  // Has session been flushed?
+  // Has final session been flushed?
   const flushed = useRef(false);
 
   // ─── Reactive state for UI display ───
@@ -85,51 +91,89 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
     return Math.max(0, Math.min(100, base + messageBonus + sourceBonus + noteBonus + summaryBonus + externalBonus - idlePenalty));
   }, []);
 
-  // ─── Flush session to backend ───
-  const flushSession = useCallback(async () => {
-    if (flushed.current) return;
-    flushed.current = true;
-
-    const totalTime = inAppTime.current + externalTime.current;
-    if (totalTime < 30) return; // Skip very short sessions
-
+  // ─── Build payload ───
+  const buildPayload = useCallback(() => {
     const auth = getAuth();
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) return null;
 
-    const payload = {
+    const totalTime = inAppTime.current + externalTime.current;
+
+    return {
       userId: user.uid,
       notebookId,
       materialId,
       startedAt: startedAt.current.toISOString(),
       endedAt: new Date().toISOString(),
-      inAppTime: inAppTime.current,
-      externalTime: externalTime.current,
-      idleTime: idleTime.current,
-      totalTime,
-      activities: activities.current,
+      inAppTime: Math.round(inAppTime.current),
+      externalTime: Math.round(externalTime.current),
+      idleTime: Math.round(idleTime.current),
+      totalTime: Math.round(totalTime),
+      activities: { ...activities.current },
       productivityScore: calculateScore(),
       page
     };
+  }, [notebookId, materialId, page, calculateScore]);
+
+  // ─── Save/update session to backend (fetch-based, works mid-session) ───
+  const saveSession = useCallback(async (isFinal = false) => {
+    const payload = buildPayload();
+    if (!payload) return;
+    if (payload.totalTime < 5 && !isFinal) return; // skip very short auto-saves
+
+    try {
+      // If we already have a session ID, update it; otherwise create new
+      const url = sessionId.current
+        ? `${TRACKING_API}/session/${sessionId.current}`
+        : `${TRACKING_API}/session`;
+      const method = sessionId.current ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: isFinal
+      });
+
+      const data = await res.json();
+      if (data.ok && data.sessionId) {
+        sessionId.current = data.sessionId;
+      }
+      console.log(`📊 Study session ${sessionId.current ? 'updated' : 'saved'}: ${payload.totalTime}s, score: ${payload.productivityScore}`);
+    } catch (err) {
+      console.error('📊 Failed to save study session:', err);
+    }
+  }, [buildPayload]);
+
+  // ─── Final flush (page close) ───
+  const flushSession = useCallback(async () => {
+    if (flushed.current) return;
+    flushed.current = true;
+
+    const payload = buildPayload();
+    if (!payload || payload.totalTime < 10) return;
 
     try {
       // Use sendBeacon for reliability on page close
+      const url = sessionId.current
+        ? `${TRACKING_API}/session/${sessionId.current}`
+        : `${TRACKING_API}/session`;
+
       const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-      const sent = navigator.sendBeacon(`${TRACKING_API}/session`, blob);
+      const sent = navigator.sendBeacon(url, blob);
       if (!sent) {
-        // Fallback to fetch
-        await fetch(`${TRACKING_API}/session`, {
-          method: 'POST',
+        await fetch(url, {
+          method: sessionId.current ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           keepalive: true
         });
       }
-      console.log(`📊 Study session flushed: ${Math.round(totalTime)}s`);
+      console.log(`📊 Study session final flush: ${payload.totalTime}s`);
     } catch (err) {
       console.error('📊 Failed to flush study session:', err);
     }
-  }, [notebookId, materialId, page, calculateScore]);
+  }, [buildPayload]);
 
   // ─── Timer tick (every second) ───
   useEffect(() => {
@@ -149,6 +193,15 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
     };
   }, []);
 
+  // ─── Auto-save every 30 seconds (so dashboard shows data in near real-time) ───
+  useEffect(() => {
+    const autoSave = setInterval(() => {
+      saveSession(false);
+    }, AUTO_FLUSH_INTERVAL);
+
+    return () => clearInterval(autoSave);
+  }, [saveSession]);
+
   // ─── Visibility change handler ───
   useEffect(() => {
     const handleVisibility = () => {
@@ -160,19 +213,19 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
         setIsTracking(false);
 
         if (externalClickPending.current) {
-          // User clicked an external link → record when they left
           externalLeftAt.current = now;
         }
+
+        // Auto-save when tab becomes hidden (user might be switching to dashboard)
+        saveSession(false);
       } else {
         // Tab became visible again
         const hiddenDuration = externalLeftAt.current ? (now - externalLeftAt.current) / 1000 : 0;
 
         if (externalClickPending.current && externalLeftAt.current) {
-          // User returned from external resource
           const duration = Math.round(hiddenDuration);
           externalTime.current += duration;
 
-          // Record the external click
           if (externalClickData.current) {
             activities.current.externalClicks.push({
               ...externalClickData.current,
@@ -191,12 +244,10 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
 
           console.log(`📊 External resource time: ${duration}s (${externalClickData.current?.type})`);
 
-          // Reset
           externalClickPending.current = false;
           externalClickData.current = null;
           externalLeftAt.current = null;
         } else if (hiddenDuration > 0) {
-          // Tab was hidden but no external click → idle time
           idleTime.current += hiddenDuration;
         }
 
@@ -208,7 +259,7 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
 
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, []);
+  }, [saveSession]);
 
   // ─── Flush on unmount / page close ───
   useEffect(() => {
@@ -265,8 +316,11 @@ export default function useStudyTracker({ page = 'ai_studio', notebookId = null,
       time: new Date()
     }]);
 
+    // Immediately save after activity so dashboard picks it up quickly
+    saveSession(false);
+
     console.log(`📊 Activity logged: ${type}`);
-  }, []);
+  }, [saveSession]);
 
   const logExternalClick = useCallback((type, url) => {
     externalClickPending.current = true;

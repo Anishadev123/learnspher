@@ -3,7 +3,7 @@ import StudySession from '../models/StudySession.js';
 
 const router = express.Router();
 
-// ─── POST /api/tracking/session ─── Save a completed study session
+// ─── POST /api/tracking/session ─── Save a NEW study session
 router.post('/session', async (req, res) => {
   try {
     const {
@@ -16,26 +16,100 @@ router.post('/session', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'userId and startedAt are required' });
     }
 
-    // Ignore sessions shorter than 30 seconds
-    if (totalTime < 30) {
-      return res.json({ ok: true, skipped: true, reason: 'Session too short (<30s)' });
+    // Ignore sessions shorter than 10 seconds
+    if (totalTime < 10) {
+      return res.json({ ok: true, skipped: true, reason: 'Session too short (<10s)' });
     }
 
     const session = await StudySession.create({
       userId, notebookId, materialId, startedAt, endedAt,
-      inAppTime: Math.round(inAppTime),
-      externalTime: Math.round(externalTime),
-      idleTime: Math.round(idleTime),
-      totalTime: Math.round(totalTime),
+      inAppTime: Math.round(inAppTime || 0),
+      externalTime: Math.round(externalTime || 0),
+      idleTime: Math.round(idleTime || 0),
+      totalTime: Math.round(totalTime || 0),
       activities: activities || {},
       productivityScore: Math.round(productivityScore || 0),
       page: page || 'ai_studio'
     });
 
-    console.log(`📊 Study session saved: ${Math.round(totalTime)}s for user ${userId}`);
+    console.log(`📊 Study session CREATED: ${Math.round(totalTime)}s for user ${userId} → ${session._id}`);
     res.json({ ok: true, sessionId: session._id });
   } catch (err) {
     console.error('❌ Tracking save error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─── PUT /api/tracking/session/:id ─── Update an existing session (auto-save / final flush)
+router.put('/session/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      endedAt, inAppTime, externalTime, idleTime, totalTime,
+      activities, productivityScore
+    } = req.body;
+
+    const updateData = {
+      endedAt: endedAt || new Date().toISOString(),
+      inAppTime: Math.round(inAppTime || 0),
+      externalTime: Math.round(externalTime || 0),
+      idleTime: Math.round(idleTime || 0),
+      totalTime: Math.round(totalTime || 0),
+      productivityScore: Math.round(productivityScore || 0),
+    };
+
+    // Update activities if provided
+    if (activities) {
+      updateData.activities = activities;
+    }
+
+    const session = await StudySession.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!session) {
+      return res.status(404).json({ ok: false, error: 'Session not found' });
+    }
+
+    console.log(`📊 Study session UPDATED: ${Math.round(totalTime)}s → ${id}`);
+    res.json({ ok: true, sessionId: session._id });
+  } catch (err) {
+    console.error('❌ Tracking update error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ─── POST /api/tracking/session/:id (sendBeacon fallback — sendBeacon can only POST) ───
+router.post('/session/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      endedAt, inAppTime, externalTime, idleTime, totalTime,
+      activities, productivityScore
+    } = req.body;
+
+    const updateData = {
+      endedAt: endedAt || new Date().toISOString(),
+      inAppTime: Math.round(inAppTime || 0),
+      externalTime: Math.round(externalTime || 0),
+      idleTime: Math.round(idleTime || 0),
+      totalTime: Math.round(totalTime || 0),
+      productivityScore: Math.round(productivityScore || 0),
+    };
+
+    if (activities) {
+      updateData.activities = activities;
+    }
+
+    const session = await StudySession.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!session) {
+      // If session not found, create a new one (edge case)
+      return res.status(404).json({ ok: false, error: 'Session not found' });
+    }
+
+    console.log(`📊 Study session UPDATED (beacon): ${Math.round(totalTime)}s → ${id}`);
+    res.json({ ok: true, sessionId: session._id });
+  } catch (err) {
+    console.error('❌ Tracking beacon update error:', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
@@ -53,18 +127,21 @@ router.get('/today/:userId', async (req, res) => {
     });
 
     const totals = sessions.reduce((acc, s) => ({
-      inAppTime: acc.inAppTime + s.inAppTime,
-      externalTime: acc.externalTime + s.externalTime,
-      idleTime: acc.idleTime + s.idleTime,
-      totalTime: acc.totalTime + s.totalTime,
+      inAppTime: acc.inAppTime + (s.inAppTime || 0),
+      externalTime: acc.externalTime + (s.externalTime || 0),
+      idleTime: acc.idleTime + (s.idleTime || 0),
+      totalTime: acc.totalTime + (s.totalTime || 0),
       messagesAsked: acc.messagesAsked + (s.activities?.messagesAsked || 0),
       sourcesOpened: acc.sourcesOpened + (s.activities?.sourcesOpened || 0),
       notesWritten: acc.notesWritten + (s.activities?.notesWritten || 0),
+      summariesGenerated: acc.summariesGenerated + (s.activities?.summariesGenerated || 0),
+      studyGuidesViewed: acc.studyGuidesViewed + (s.activities?.studyGuidesViewed || 0),
       sessionCount: acc.sessionCount + 1,
       avgScore: acc.avgScore + (s.productivityScore || 0),
     }), {
       inAppTime: 0, externalTime: 0, idleTime: 0, totalTime: 0,
       messagesAsked: 0, sourcesOpened: 0, notesWritten: 0,
+      summariesGenerated: 0, studyGuidesViewed: 0,
       sessionCount: 0, avgScore: 0
     });
 
