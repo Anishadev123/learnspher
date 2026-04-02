@@ -7,6 +7,7 @@ import notebookRoutes from './routes/notebook.js'
 import sourceRoutes from './routes/source.js'
 import toolsRoutes from './routes/tools.js'
 import notesRoutes from './routes/notes.js'
+import trackingRoutes from './routes/tracking.js'
 const app = express()
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
@@ -17,6 +18,7 @@ app.use('/api/notebook', notebookRoutes)
 app.use('/api/source', sourceRoutes)
 app.use('/api/tools', toolsRoutes)
 app.use('/api/notes', notesRoutes)
+app.use('/api/tracking', trackingRoutes)
 // static file serving for generated files (audio/pdf)
 app.use('/files', express.static(path.join(process.cwd(), 'tmp')))
 app.get('/', (req, res) => res.json({ ok: true, msg: 'NotebookLM backend' }))

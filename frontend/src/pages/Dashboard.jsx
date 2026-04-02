@@ -5,6 +5,7 @@ import { Settings, Bell, Sparkles } from "lucide-react"
 import Sidebar from "../components/Dashboard/Sidebar"
 import WelcomeBanner from "../components/Dashboard/WelcomeBanner"
 import StudyMaterialSection from "../components/Dashboard/StudyMaterialSection"
+import StudyAnalytics from "../components/Dashboard/StudyAnalytics"
 import CreateStudyPlanModal from "../components/Dashboard/CreateStudyPlanModal"
 import { useCredits } from "../context/CreditsContext"
 import "./Dashboard.css"
@@ -63,6 +64,7 @@ export default function Dashboard() {
 
         <div className="dashboard-content">
           <WelcomeBanner userName={userName} />
+          <StudyAnalytics />
           <StudyMaterialSection />
         </div>
       </div>

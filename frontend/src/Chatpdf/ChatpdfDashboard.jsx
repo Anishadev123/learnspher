@@ -8,10 +8,15 @@ import RightPanel from "./RightPanel";
 import CreateNotebookModal from "./CreateNotebookModal";
 import AddSourceModal from "./AddSourceModal";
 import { API_BASE_URL } from "./api";
+import useStudyTracker from "../hooks/useStudyTracker";
+import StudyTrackerWidget from "./StudyTrackerWidget";
 
 export default function ChatpdfDashboard() {
   const [notebooks, setNotebooks] = useState([]);
   const [selectedNotebook, setSelectedNotebook] = useState(null);
+
+  // Study tracking — passive, zero manual input
+  const tracker = useStudyTracker({ page: 'ai_studio', notebookId: selectedNotebook?._id || selectedNotebook?.id || null });
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
@@ -239,10 +244,11 @@ export default function ChatpdfDashboard() {
         selectedNotebook={selectedNotebook}
         activeSource={activeSource}
         onCloseSource={() => setActiveSource(null)}
+        tracker={tracker}
       />
 
 
-      <RightPanel activeSource={activeSource} selectedNotebook={selectedNotebook} onNoteSaved={() => setNotesVersion(v => v + 1)} />
+      <RightPanel activeSource={activeSource} selectedNotebook={selectedNotebook} onNoteSaved={() => setNotesVersion(v => v + 1)} tracker={tracker} />
 
 
       {isCreateNotebookOpen && (
@@ -259,6 +265,9 @@ export default function ChatpdfDashboard() {
           onAdd={handleAddSource}
         />
       )}
+
+      {/* Floating Study Tracker Widget */}
+      <StudyTrackerWidget tracker={tracker} />
     </div>
   );
 }

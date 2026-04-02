@@ -1,0 +1,135 @@
+/* ============================================
+   WeeklyChart — CSS Bar Chart
+   ============================================ */
+
+.weekly-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Bar Container */
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0en 0.5rem;
+}
+
+.chart-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.chart-bar-col:hover .bar-tooltip {
+  opacity: 1;
+  transform: translateY(-4px);
+}
+
+/* Tooltip */
+.bar-tooltip {
+  position: absolute;
+  top: -28px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  opacity: 0;
+  transform: translateY(0);
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Bar Stack */
+.bar-stack {
+  width: 100%;
+  max-width: 36px;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 6px 6px 2px 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  transition: transform var(--transition-base);
+}
+
+.chart-bar-col:hover .bar-stack {
+  transform: scaleY(1.03);
+}
+
+/* Bar Segments */
+.bar-segment {
+  width: 100%;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 0;
+}
+
+.bar-inapp {
+  background: linear-gradient(to top, #10b981, #34d399);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+.bar-idle {
+  background: linear-gradient(to top, #059669, #10b981);
+  opacity: 0.5;
+}
+
+/* Day Labels */
+.bar-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Today Highlight */
+.chart-bar-col.today .bar-label {
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.chart-bar-col.today .bar-stack {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+}
+
+/* Legend */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legend-inapp {
+  background: #10b981;
+}
+
+.legend-external {
+  background: #059669;
+  opacity: 0.5;
+}

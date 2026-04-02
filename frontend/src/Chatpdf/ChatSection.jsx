@@ -3,7 +3,7 @@ import "./ChatSection.css"
 import { Send, Paperclip, Plus } from "lucide-react"
 import SourceViewer from "./SourceViewer"
 
-export default function ChatSection({ messages, onSendMessage, onAddSource, selectedNotebook, activeSource, onCloseSource }) {
+export default function ChatSection({ messages, onSendMessage, onAddSource, selectedNotebook, activeSource, onCloseSource, tracker }) {
   const [input, setInput] = useState("")
 
   const handleSubmit = (e) => {
@@ -11,6 +11,8 @@ export default function ChatSection({ messages, onSendMessage, onAddSource, sele
     if (input.trim()) {
       onSendMessage(input)
       setInput("")
+      // Log message activity for study tracking
+      if (tracker) tracker.logActivity('message');
     }
   }
 
@@ -63,7 +65,7 @@ export default function ChatSection({ messages, onSendMessage, onAddSource, sele
         {/* SOURCE VIEWER AREA */}
         {activeSource && (
           <div className="source-viewer-wrapper">
-            <SourceViewer source={activeSource} onClose={onCloseSource} />
+            <SourceViewer source={activeSource} onClose={onCloseSource} tracker={tracker} />
           </div>
         )}
 

@@ -1,14 +1,46 @@
 "use client"
 
-import { Plus, LayoutGrid, Shield, LogOut, BrainCircuit, Zap } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, LayoutGrid, Shield, LogOut, BrainCircuit, Zap, Clock } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { getAuth } from "firebase/auth"
 import "./Sidebar.css"
+
+const TRACKING_API = "http://localhost:8080/api/tracking";
+
+function formatStudyTime(seconds) {
+  if (!seconds || seconds < 60) return "0m";
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.round((seconds % 3600) / 60);
+  if (hrs > 0) return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+  return `${mins}m`;
+}
 
 export default function Sidebar({ userName, credits, totalCredits, usedCredits, onCreateNew }) {
   const navigate = useNavigate()
   const progressPercentage = (usedCredits / totalCredits) * 100
   const handleLogout = () => navigate("/")
   const isDisabled = credits === 0
+
+  const [todayTime, setTodayTime] = useState(0);
+
+  useEffect(() => {
+    const fetchToday = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) return;
+        const res = await fetch(`${TRACKING_API}/today/${user.uid}`);
+        const data = await res.json();
+        if (data.ok) setTodayTime(data.totalTime || 0);
+      } catch (err) {
+        // Silently fail — non-critical
+      }
+    };
+    fetchToday();
+    const interval = setInterval(fetchToday, 120000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <aside className="sidebar-1">
@@ -47,6 +79,13 @@ export default function Sidebar({ userName, credits, totalCredits, usedCredits, 
         <Plus size={18} />
         Create New
       </button>
+
+      {/* Today's Study Time */}
+      <div className="study-time-indicator">
+        <Clock size={14} className="study-time-icon" />
+        <span className="study-time-label">Today:</span>
+        <span className="study-time-value">{formatStudyTime(todayTime)}</span>
+      </div>
 
       {/* Credits Section */}
       <div className="credits-section-1">

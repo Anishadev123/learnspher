@@ -1,11 +1,25 @@
 "use client";
 
 import { X, ExternalLink, Play, Globe } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./SourceViewer.css";
 
-export default function SourceViewer({ source, onClose }) {
+export default function SourceViewer({ source, onClose, tracker }) {
     const [iframeError, setIframeError] = useState(false);
+    const loggedSourceRef = useRef(null);
+
+    // Log source open when source changes
+    useEffect(() => {
+        if (source && source._id !== loggedSourceRef.current) {
+            loggedSourceRef.current = source._id;
+            if (tracker) tracker.logActivity('source');
+        }
+    }, [source, tracker]);
+
+    // Handler for external link clicks
+    const handleExternalClick = (type, url) => {
+        if (tracker) tracker.logExternalClick(type, url);
+    };
 
     if (!source) return null;
 
@@ -56,6 +70,7 @@ export default function SourceViewer({ source, onClose }) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="youtube-thumbnail-link"
+                                onClick={() => handleExternalClick('youtube', youtubeUrl)}
                             >
                                 <img
                                     src={thumbnailUrl}
@@ -134,6 +149,7 @@ export default function SourceViewer({ source, onClose }) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="external-link"
+                                onClick={() => handleExternalClick('website', displayUrl)}
                             >
                                 <Globe size={14} /> Open in New Tab <ExternalLink size={14} />
                             </a>

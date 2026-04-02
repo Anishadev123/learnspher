@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { API_BASE_URL } from "./api";
 
-export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved }) {
+export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved, tracker }) {
   const [expandedSection, setExpandedSection] = useState(null);
   const [loading, setLoading] = useState(false);
   const [studyGuide, setStudyGuide] = useState(null);
@@ -79,6 +79,8 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
         setNoteSaved(true);
         setTimeout(() => setNoteSaved(false), 2000);
         if (onNoteSaved) onNoteSaved();
+        // Log note activity for study tracking
+        if (tracker) tracker.logActivity('note');
       }
     } catch (err) {
       console.error("Failed to save note:", err);
@@ -125,6 +127,8 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
       const data = await res.json();
       setStudyGuide(data.answer);
       setIsStudyModalOpen(true);
+      // Log study guide activity
+      if (tracker) tracker.logActivity('guide');
     } catch (err) {
       console.error(err);
       alert("Failed to generate study guide");
@@ -171,6 +175,8 @@ export default function RightPanel({ activeSource, selectedNotebook, onNoteSaved
       if (data.answer) {
         setSummaryData(data.answer);
         setIsSummaryModalOpen(true);
+        // Log summary activity
+        if (tracker) tracker.logActivity('summary');
       } else {
         alert("No summary could be generated. Make sure the notebook has sources with ingested content.");
       }
